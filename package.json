@@ -1,0 +1,22 @@
+{
+  "name": "quiztime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stephendodd/quiztime.git"
+  },
+  "author": "stephen dodd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stephendodd/quiztime/issues"
+  },
+  "homepage": "https://github.com/stephendodd/quiztime#readme",
+  "devDependencies": {
+    "sqlite3": "^3.1.8"
+  }
+}
