@@ -6,75 +6,94 @@
 </head>
 <body>
   <script>
+
     var quizJson = {};
     var parseJson = function(response) { return response.json() };
     var renderFromJson = function(json) {
-      console.log(json);
-      document.getElementById('question').innerText = json.quiz[0][0];
-      document.getElementById('option1label').innerText = json.quiz[0][1];
-      document.getElementById('option2label').innerText = json.quiz[0][2];
-      document.getElementById('option3label').innerText = json.quiz[0][3];
-      document.getElementById('option4label').innerText = json.quiz[0][4];
+
+      var noOfAnswers = 4;
+
+      var questions = document.createElement("div");
+      questions.id = "questionsId";
+      document.body.appendChild(questions);
+
+      json.quiz.forEach(function(question) {
+        var questionElm = document.createElement("form");
+        questionElm.name = "questionForm";
+
+        var questionString = document.createElement("p");
+        questionString.innerText = question[0];
+        questionElm.appendChild(questionString);
+
+        for (i=0; i< noOfAnswers; i++) {
+          var option = document.createElement("div");
+          var optioninput = document.createElement("input");
+          optioninput.name = "option";
+          optioninput.type ="radio";
+          var optionlabel = document.createElement("label");
+          optionlabel.innerText = question[i+1];
+          option.appendChild(optioninput);
+          option.appendChild(optionlabel);
+          questionElm.appendChild(option);
+        }
+
+        questions.appendChild(questionElm);
+      });
+
+      var inputButton = document.createElement("input");
+      inputButton.type = "button";
+      inputButton.onclick = submitAnswer;
+      inputButton.value = "submit answer";
+      questions.appendChild(inputButton);
+
       quizJson = json;
       return json;
-    }
+    };
     var logErrors = function(ex) { console.log('parsing failed', ex) };
 
     var quizJson = fetch('/quiz1').then(parseJson).then(renderFromJson).catch(logErrors);
 
     function submitAnswer() {
-
-      var userAnswer = getAnswer();
-
-      var actualAnswer = quizJson.quiz[0][5];
-
-      var correct = isCorrect(userAnswer, actualAnswer);
-
-      if (correct) {
-        console.log("Correct the answer is " + quizJson.quiz[0][actualAnswer]);
-      } else {
-          console.log("Incorrect the answer was " + quizJson.quiz[0][actualAnswer]);
+      var totalCorrect = 0;
+      var totalQuestions = document.getElementById("questionsId").getElementsByTagName("form").length;
+      for (i=0; i<totalQuestions; i++) {
+        var userAnswerNew = getAnswer(document.getElementById("questionsId").getElementsByTagName("form")[i].elements);
+        var actualAnswer = quizJson.quiz[i][5];
+        var correct = isCorrect(userAnswerNew, actualAnswer);
+        if (correct) {
+          totalCorrect += 1;
+        }
       }
+
+      console.log("Answers correct: " + totalCorrect);
 
     }
 
-    function getAnswer() {
+    function getAnswer(questions) {
+
       var selected;
-      if (document.getElementById("option1").checked) {
+      if (questions[0].checked) {
         selected = 1;
       }
-      if (document.getElementById("option2").checked) {
+      if (questions[1].checked) {
         selected = 2;
       }
-      if (document.getElementById("option3").checked) {
+      if (questions[2].checked) {
         selected = 3;
       }
-      if (document.getElementById("option4").checked) {
+      if (questions[3].checked) {
         selected = 4;
       }
       return selected;
     }
 
     function isCorrect(userAnswer, actualAnswer) {
-      if (userAnswer == actualAnswer) {
-        return true;
-      }
+      return userAnswer == actualAnswer;
     }
 
   </script>
 
-  <h1 id = "question">Question</h1>
-  <form>
-    <input type="radio" id = "option1" name="option">
-    <label id="option1label" for = "option1">Answer1</label><br/>
-    <input type="radio" id = "option2" name="option">
-    <label id="option2label" for = "option2">Answer2</label><br/>
-    <input type="radio" id = "option3" name="option">
-    <label id="option3label" for = "option3">Answer3</label><br/>
-    <input type="radio" id = "option4" name="option">
-    <label id="option4label" for = "option4">Answer4</label><br/>
-    <input type ="button" onclick="submitAnswer()" value="Submit Answer">
-  </form>
+  <h1 id = "quizTitle">Pokemon Quiz</h1>
 
 </body>
 </html>
