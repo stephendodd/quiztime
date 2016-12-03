@@ -1,7 +1,8 @@
+require 'sinatra'
 require 'json'
 require 'sqlite3'
 
-quizArray = []
+questionArray = []
 
 begin
 
@@ -9,7 +10,7 @@ begin
   stm = db.prepare "SELECT * FROM quiz1"
   rs = stm.execute
   rs.each do |question|
-    quizArray.push(question)
+    questionArray.push(question)
   end
 
 rescue SQLite3::Exception => e
@@ -19,4 +20,15 @@ rescue SQLite3::Exception => e
 ensure
   stm.close if stm
   db.close if db
+end
+
+get '/' do
+  File.new('public/index.html').read
+end
+
+get '/quiz1' do
+
+  content_type :json
+  {quiz: questionArray}.to_json
+
 end

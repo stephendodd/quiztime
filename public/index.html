@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiztime</title>
+</head>
+<body>
+  <script>
+
+    var parseJson = function(response) { return response.json() };
+    var renderFromJson = function(json) {
+      console.log(json);
+      document.getElementById('question').innerText = json.quiz[0][0];
+
+      return json;
+    }
+    var logErrors = function(ex) { console.log('parsing failed', ex) };
+
+    var quizJson = fetch('/quiz1').then(parseJson).then(renderFromJson).catch(logErrors);
+
+
+  </script>
+
+  <h1 id = "question">Question</h1>
+
+</body>
+</html>

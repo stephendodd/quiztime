@@ -1,0 +1,18 @@
+{
+  "name": "sinatra",
+  "version": "0.0.5",
+  "homepage": "https://github.com/websperts/sinatra.js",
+  "authors": [
+    "websperts <hello@websperts.com>"
+  ],
+  "description": "Minimal Sinatra like router for your Web browser",
+  "main": "sinatra.js",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "sinatra",
+    "routing"
+  ],
+  "license": "MIT"
+}
