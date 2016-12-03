@@ -6,22 +6,75 @@
 </head>
 <body>
   <script>
-
+    var quizJson = {};
     var parseJson = function(response) { return response.json() };
     var renderFromJson = function(json) {
       console.log(json);
       document.getElementById('question').innerText = json.quiz[0][0];
-
+      document.getElementById('option1label').innerText = json.quiz[0][1];
+      document.getElementById('option2label').innerText = json.quiz[0][2];
+      document.getElementById('option3label').innerText = json.quiz[0][3];
+      document.getElementById('option4label').innerText = json.quiz[0][4];
+      quizJson = json;
       return json;
     }
     var logErrors = function(ex) { console.log('parsing failed', ex) };
 
     var quizJson = fetch('/quiz1').then(parseJson).then(renderFromJson).catch(logErrors);
 
+    function submitAnswer() {
+
+      var userAnswer = getAnswer();
+
+      var actualAnswer = quizJson.quiz[0][5];
+
+      var correct = isCorrect(userAnswer, actualAnswer);
+
+      if (correct) {
+        console.log("Correct the answer is " + quizJson.quiz[0][actualAnswer]);
+      } else {
+          console.log("Incorrect the answer was " + quizJson.quiz[0][actualAnswer]);
+      }
+
+    }
+
+    function getAnswer() {
+      var selected;
+      if (document.getElementById("option1").checked) {
+        selected = 1;
+      }
+      if (document.getElementById("option2").checked) {
+        selected = 2;
+      }
+      if (document.getElementById("option3").checked) {
+        selected = 3;
+      }
+      if (document.getElementById("option4").checked) {
+        selected = 4;
+      }
+      return selected;
+    }
+
+    function isCorrect(userAnswer, actualAnswer) {
+      if (userAnswer == actualAnswer) {
+        return true;
+      }
+    }
 
   </script>
 
   <h1 id = "question">Question</h1>
+  <form>
+    <input type="radio" id = "option1" name="option">
+    <label id="option1label" for = "option1">Answer1</label><br/>
+    <input type="radio" id = "option2" name="option">
+    <label id="option2label" for = "option2">Answer2</label><br/>
+    <input type="radio" id = "option3" name="option">
+    <label id="option3label" for = "option3">Answer3</label><br/>
+    <input type="radio" id = "option4" name="option">
+    <label id="option4label" for = "option4">Answer4</label><br/>
+    <input type ="button" onclick="submitAnswer()" value="Submit Answer">
+  </form>
 
 </body>
 </html>
