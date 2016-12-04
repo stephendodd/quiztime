@@ -8,6 +8,7 @@
   <script>
 
     var quizJson = {};
+    var noQuizzes = {};
     var parseJson = function(response) { return response.json() };
     var renderFromJson = function(json) {
 
@@ -15,7 +16,9 @@
 
       var questions = document.createElement("div");
       questions.id = "questionsId";
+
       document.body.appendChild(questions);
+
 
       json.quiz.forEach(function(question) {
         var questionElm = document.createElement("form");
@@ -53,6 +56,7 @@
 
     var renderFromJsonScores = function(json) {
       var scores = document.createElement("div");
+      scores.id = "scores";
       var scoreTitle = document.createElement("p");
       scoreTitle.innerText = "Scores";
       scores.appendChild(scoreTitle);
@@ -67,9 +71,14 @@
       document.body.appendChild(scores);
     }
 
+    var renderFromJsonNoQuiz = function(json) {
+      noQuizzes = json;
+      json;
+    };
+
     var quizJson = fetch('/quiz/2').then(parseJson).then(renderFromJson).catch(logErrors);
     var scoresJson = fetch('/scores/2').then(parseJson).then(renderFromJsonScores).catch(logErrors);
-
+    var noQuizzes2 = fetch('/noquiz').then(parseJson).then(renderFromJsonNoQuiz).catch(logErrors);
 
     function submitAnswer() {
       var totalCorrect = 0;
@@ -109,9 +118,26 @@
       return userAnswer == actualAnswer;
     }
 
+    function changeQuiz(newQuiz) {
+
+      if (newQuiz <= noQuizzes["noQuiz"] && newQuiz > 0) {
+        el = document.getElementById("questionsId");
+        el.parentNode.removeChild(el);
+        el2 = document.getElementById("scores");
+        el2.parentNode.removeChild(el2);
+        var quizJson = fetch('/quiz/'+newQuiz).then(parseJson).then(renderFromJson).catch(logErrors);
+        var scoresJson = fetch('/scores/'+newQuiz).then(parseJson).then(renderFromJsonScores).catch(logErrors);
+
+    }
+  }
+
   </script>
 
   <h1 id = "quizTitle">Quiz</h1>
+
+  <p> Select a quiz</p>
+  <input id="quizInput" type = "text" value ="1">
+  <button type = "submit" onclick=changeQuiz(document.getElementById("quizInput").value)>Change</button>
 
 </body>
 </html>

@@ -45,12 +45,13 @@ get '/quiz/:quizNo' do
   begin
 
     db2 = SQLite3::Database.open "quizzes.sqlite"
-    stm = db2.prepare "SELECT * FROM #{quizString}"
 
-    rs = stm.execute
-    rs.each do |question|
-      questionArray.push(question)
-    end
+      stm = db2.prepare "SELECT * FROM #{quizString}"
+
+      rs = stm.execute
+      rs.each do |question|
+        questionArray.push(question)
+      end
 
   rescue SQLite3::Exception => e
     puts "Error occured"
@@ -63,5 +64,28 @@ get '/quiz/:quizNo' do
 
   content_type :json
   {quiz: questionArray}.to_json
+
+end
+
+get '/noquiz' do
+  noQuizzes = 0
+  begin
+  db3 = SQLite3::Database.open "quizzes.sqlite"
+  stm3 = db3.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
+  rs3 = stm3.execute
+  rs3.each do |res|
+    noQuizzes = res[0]-1
+  end
+
+rescue SQLite3::Exception => e
+  puts "Error occured"
+  puts e
+
+ensure
+  stm3.close if stm3
+  db3.close if db3
+end
+content_type :json
+{noQuiz: noQuizzes}.to_json
 
 end
