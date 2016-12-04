@@ -18,7 +18,8 @@ begin
   users = db.prepare "SELECT * FROM users WHERE quiz == 1"
   usersResult = users.execute
   usersResult.each do |user|
-    userArray.push(user);
+    jsonUser = {"alias": user[1], "score": user[2]}
+    userArray.push(jsonUser);
   end
 
 rescue SQLite3::Exception => e
@@ -43,6 +44,10 @@ get '/quiz1' do
 end
 
 get '/1/scores' do
+
+  userArray.sort_by! do |e|
+    e[:score]
+  end
   content_type :json
   {scores: userArray}.to_json
 

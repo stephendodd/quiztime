@@ -51,7 +51,25 @@
     };
     var logErrors = function(ex) { console.log('parsing failed', ex) };
 
+    var renderFromJsonScores = function(json) {
+      var scores = document.createElement("div");
+      var scoreTitle = document.createElement("p");
+      scoreTitle.innerText = "Scores";
+      scores.appendChild(scoreTitle);
+
+      json.scores.forEach(function(score) {
+        var scoreElm = document.createElement("p");
+        scoreElm.innerText = score["alias"] + ": " + score["score"];
+        scores.appendChild(scoreElm);
+      })
+
+
+      document.body.appendChild(scores);
+    }
+
     var quizJson = fetch('/quiz1').then(parseJson).then(renderFromJson).catch(logErrors);
+    var scoresJson = fetch('/1/scores').then(parseJson).then(renderFromJsonScores).catch(logErrors);
+
 
     function submitAnswer() {
       var totalCorrect = 0;
@@ -93,7 +111,7 @@
 
   </script>
 
-  <h1 id = "quizTitle">Pokemon Quiz</h1>
+  <h1 id = "quizTitle">Quiz</h1>
 
 </body>
 </html>
