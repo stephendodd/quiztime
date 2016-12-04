@@ -2,33 +2,33 @@ require 'sinatra'
 require 'json'
 require 'sqlite3'
 
-userArray = []
-
-begin
-
-  db = SQLite3::Database.open "quizzes.sqlite"
-
-  users = db.prepare "SELECT * FROM users WHERE quiz == 1"
-  usersResult = users.execute
-  usersResult.each do |user|
-    jsonUser = {"alias": user[1], "score": user[2]}
-    userArray.push(jsonUser);
-  end
-
-rescue SQLite3::Exception => e
-  puts "Error occured"
-  puts e
-
-ensure
-  users.close if users
-  db.close if db
-end
-
 get '/' do
   File.new('public/index.html').read
 end
 
-get '/1/scores' do
+get '/scores/:quizNo' do
+
+  userArray = []
+
+  begin
+
+    db = SQLite3::Database.open "quizzes.sqlite"
+
+    users = db.prepare "SELECT * FROM users WHERE quiz == #{params[:quizNo]}"
+    usersResult = users.execute
+    usersResult.each do |user|
+      jsonUser = {"alias": user[1], "score": user[2]}
+      userArray.push(jsonUser);
+    end
+
+  rescue SQLite3::Exception => e
+    puts "Error occured"
+    puts e
+
+  ensure
+    users.close if users
+    db.close if db
+  end
 
   userArray.sort_by! do |e|
     e[:score]

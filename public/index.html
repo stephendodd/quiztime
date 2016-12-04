@@ -68,7 +68,7 @@
     }
 
     var quizJson = fetch('/quiz/2').then(parseJson).then(renderFromJson).catch(logErrors);
-    var scoresJson = fetch('/1/scores').then(parseJson).then(renderFromJsonScores).catch(logErrors);
+    var scoresJson = fetch('/scores/2').then(parseJson).then(renderFromJsonScores).catch(logErrors);
 
 
     function submitAnswer() {
