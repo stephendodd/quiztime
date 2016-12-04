@@ -67,7 +67,7 @@
       document.body.appendChild(scores);
     }
 
-    var quizJson = fetch('/quiz1').then(parseJson).then(renderFromJson).catch(logErrors);
+    var quizJson = fetch('/quiz/2').then(parseJson).then(renderFromJson).catch(logErrors);
     var scoresJson = fetch('/1/scores').then(parseJson).then(renderFromJsonScores).catch(logErrors);
 
 
