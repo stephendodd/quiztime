@@ -6,6 +6,16 @@ get '/' do
   File.new('public/index.html').read
 end
 
+get '/alias/:alias/:currentquiz/:score' do
+  puts params[:alias]
+  db = SQLite3::Database.open "quizzes.sqlite"
+
+  #puts db.execute( "SELECT 1 FROM users WHERE alias = #{params[:alias]}")
+
+  db.execute( "INSERT INTO users ( quiz, alias, score ) VALUES ( ?, ?, ? )", [params[:currentquiz], params[:alias], params[:score]])
+
+end
+
 get '/scores/:quizNo' do
 
   userArray = []
@@ -70,22 +80,21 @@ end
 get '/noquiz' do
   noQuizzes = 0
   begin
-  db3 = SQLite3::Database.open "quizzes.sqlite"
-  stm3 = db3.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
-  rs3 = stm3.execute
-  rs3.each do |res|
-    noQuizzes = res[0]-1
+    db3 = SQLite3::Database.open "quizzes.sqlite"
+    stm3 = db3.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
+    rs3 = stm3.execute
+    rs3.each do |res|
+      noQuizzes = res[0]-1
+    end
+
+  rescue SQLite3::Exception => e
+    puts "Error occured"
+    puts e
+
+  ensure
+    stm3.close if stm3
+    db3.close if db3
   end
-
-rescue SQLite3::Exception => e
-  puts "Error occured"
-  puts e
-
-ensure
-  stm3.close if stm3
-  db3.close if db3
-end
-content_type :json
-{noQuiz: noQuizzes}.to_json
-
+  content_type :json
+  {noQuiz: noQuizzes}.to_json
 end

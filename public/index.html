@@ -9,6 +9,7 @@
 
     var quizJson = {};
     var noQuizzes = {};
+    var currentQuiz = 1;
     var parseJson = function(response) { return response.json() };
     var renderFromJson = function(json) {
 
@@ -42,6 +43,10 @@
 
         questions.appendChild(questionElm);
       });
+      var inputAlias = document.createElement("input");
+      inputAlias.type = "text";
+      inputAlias.id = "inputAlias";
+      questions.appendChild(inputAlias);
 
       var inputButton = document.createElement("input");
       inputButton.type = "button";
@@ -76,8 +81,8 @@
       json;
     };
 
-    var quizJson = fetch('/quiz/2').then(parseJson).then(renderFromJson).catch(logErrors);
-    var scoresJson = fetch('/scores/2').then(parseJson).then(renderFromJsonScores).catch(logErrors);
+    var quizJson = fetch('/quiz/'+currentQuiz).then(parseJson).then(renderFromJson).catch(logErrors);
+    var scoresJson = fetch('/scores/'+currentQuiz).then(parseJson).then(renderFromJsonScores).catch(logErrors);
     var noQuizzes2 = fetch('/noquiz').then(parseJson).then(renderFromJsonNoQuiz).catch(logErrors);
 
     function submitAnswer() {
@@ -93,6 +98,12 @@
       }
 
       console.log("Answers correct: " + totalCorrect);
+
+      var name = document.getElementById("inputAlias").value;
+      if (name != "") {
+        var nameJson = fetch('/alias/'+name+'/'+currentQuiz+'/'+totalCorrect);
+      }
+
 
     }
 
@@ -121,6 +132,7 @@
     function changeQuiz(newQuiz) {
 
       if (newQuiz <= noQuizzes["noQuiz"] && newQuiz > 0) {
+        currentQuiz = newQuiz;
         el = document.getElementById("questionsId");
         el.parentNode.removeChild(el);
         el2 = document.getElementById("scores");
