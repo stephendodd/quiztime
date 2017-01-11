@@ -3,7 +3,33 @@ require 'json'
 require 'sqlite3'
 
 get '/' do
-  File.new('public/index.html').read
+  File.new('public/quizzes.html').read
+end
+
+get '/quizzes' do
+
+  quizzes = []
+
+  begin
+    db3 = SQLite3::Database.open "quizzes.sqlite"
+    stm3 = db3.prepare "SELECT * FROM quizzes"
+    rs3 = stm3.execute
+    rs3.each do |res|
+      quiz = {"name": res[0], "link": res[1]}
+      quizzes.push(quiz)
+    end
+
+rescue SQLite3::Exception => e
+  puts "Error occured"
+  puts e
+
+ensure
+  stm3.close if stm3
+  db3.close if db3
+end
+content_type :json
+{quizzes: quizzes}.to_json
+
 end
 
 get '/alias/:alias/:currentquiz/:score' do
@@ -77,15 +103,15 @@ get '/quiz/:quizNo' do
 
 end
 
-get '/noquiz' do
-  noQuizzes = 0
-  begin
-    db3 = SQLite3::Database.open "quizzes.sqlite"
-    stm3 = db3.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
-    rs3 = stm3.execute
-    rs3.each do |res|
-      noQuizzes = res[0]-1
-    end
+  get '/noquiz' do
+    noQuizzes = 0
+    begin
+      db3 = SQLite3::Database.open "quizzes.sqlite"
+      stm3 = db3.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
+      rs3 = stm3.execute
+      rs3.each do |res|
+        noQuizzes = res[0]-1
+      end
 
   rescue SQLite3::Exception => e
     puts "Error occured"
