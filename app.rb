@@ -14,8 +14,9 @@ get '/quizzes' do
     db3 = SQLite3::Database.open "quizzes.sqlite"
     stm3 = db3.prepare "SELECT * FROM quizzes"
     rs3 = stm3.execute
-    rs3.each do |res|
-      quiz = {"name": res[0], "link": res[1]}
+    rs3.each_hash do |res|
+      quiz = {name: res["name"], link: "quiz/#{res['id']}" }
+      puts quiz
       quizzes.push(quiz)
     end
 
