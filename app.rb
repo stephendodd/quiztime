@@ -3,7 +3,7 @@ require 'json'
 require 'sqlite3'
 
 get '/' do
-  File.new('public/quizzes.html').read
+  File.new('public/index.html').read
 end
 
 get '/quizzes' do
@@ -15,21 +15,22 @@ get '/quizzes' do
     stm3 = db3.prepare "SELECT * FROM quizzes"
     rs3 = stm3.execute
     rs3.each_hash do |res|
-      quiz = {name: res["name"], link: "quiz/#{res['id']}" }
-      puts quiz
-      quizzes.push(quiz)
+      quizzes.push(
+        name: res["name"],
+        id: "#{res['id']}"
+      )
     end
 
-rescue SQLite3::Exception => e
-  puts "Error occured"
-  puts e
+  rescue SQLite3::Exception => e
+    puts "Error occured"
+    puts e
 
-ensure
-  stm3.close if stm3
-  db3.close if db3
-end
-content_type :json
-{quizzes: quizzes}.to_json
+  ensure
+    stm3.close if stm3
+    db3.close if db3
+  end
+  content_type :json
+  {quizzes: quizzes}.to_json
 
 end
 
@@ -73,6 +74,10 @@ get '/scores/:quizNo' do
   content_type :json
   {scores: userArray}.to_json
 
+end
+
+get '/quiznew/:quizNo' do
+    File.new('public/quiz.html').read
 end
 
 get '/quiz/:quizNo' do

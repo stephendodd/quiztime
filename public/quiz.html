@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiztime</title>
+</head>
+<body>
+  <script>
+
+    var quizJson = {};
+    var noQuizzes = {};
+    console.log(window.location.href)
+    var currentUrl = window.location.href;
+
+    var currentQuiz = currentUrl.substr(currentUrl.length - 1);
+    if (currentQuiz > 2 || currentQuiz <= 0) {
+      currentQuiz = 1;
+    }
+
+    var parseJson = function(response) { return response.json() };
+    var renderFromJson = function(json) {
+
+      var noOfAnswers = 4;
+
+      var questions = document.createElement("div");
+      questions.id = "questionsId";
+
+      document.body.appendChild(questions);
+
+      json.quiz.forEach(function(question) {
+        var questionElm = document.createElement("form");
+        questionElm.name = "questionForm";
+
+        var questionString = document.createElement("p");
+        questionString.innerText = question[0];
+        questionElm.appendChild(questionString);
+
+        for (i=0; i< noOfAnswers; i++) {
+          var option = document.createElement("div");
+          var optioninput = document.createElement("input");
+          optioninput.name = "option";
+          optioninput.type ="radio";
+          var optionlabel = document.createElement("label");
+          optionlabel.innerText = question[i+1];
+          option.appendChild(optioninput);
+          option.appendChild(optionlabel);
+          questionElm.appendChild(option);
+        }
+
+        questions.appendChild(questionElm);
+      });
+      var inputAlias = document.createElement("input");
+      inputAlias.type = "text";
+      inputAlias.id = "inputAlias";
+      questions.appendChild(inputAlias);
+
+      var inputButton = document.createElement("input");
+      inputButton.type = "button";
+      inputButton.onclick = submitAnswer;
+      inputButton.value = "submit answer";
+      questions.appendChild(inputButton);
+
+      quizJson = json;
+      return json;
+    };
+    var logErrors = function(ex) { console.log('parsing failed', ex) };
+
+    var renderFromJsonScores = function(json) {
+      var scores = document.createElement("div");
+      scores.id = "scores";
+      var scoreTitle = document.createElement("p");
+      scoreTitle.innerText = "Scores";
+      scores.appendChild(scoreTitle);
+
+      json.scores.forEach(function(score) {
+        var scoreElm = document.createElement("p");
+        scoreElm.innerText = score["alias"] + ": " + score["score"];
+        scores.appendChild(scoreElm);
+      })
+
+
+      document.body.appendChild(scores);
+    }
+
+    var renderFromJsonNoQuiz = function(json) {
+      noQuizzes = json;
+      json;
+    };
+
+    var quizJson = fetch('/quiz/'+currentQuiz).then(parseJson).then(renderFromJson).catch(logErrors);
+    var scoresJson = fetch('/scores/'+currentQuiz).then(parseJson).then(renderFromJsonScores).catch(logErrors);
+    var noQuizzes2 = fetch('/noquiz').then(parseJson).then(renderFromJsonNoQuiz).catch(logErrors);
+
+    function submitAnswer() {
+      var totalCorrect = 0;
+      var totalQuestions = document.getElementById("questionsId").getElementsByTagName("form").length;
+      for (i=0; i<totalQuestions; i++) {
+        var userAnswerNew = getAnswer(document.getElementById("questionsId").getElementsByTagName("form")[i].elements);
+        var actualAnswer = quizJson.quiz[i][5];
+        var correct = isCorrect(userAnswerNew, actualAnswer);
+        if (correct) {
+          totalCorrect += 1;
+        }
+      }
+
+      console.log("Answers correct: " + totalCorrect);
+
+      var name = document.getElementById("inputAlias").value;
+      if (name != "") {
+        var nameJson = fetch('/alias/'+name+'/'+currentQuiz+'/'+totalCorrect);
+      }
+
+
+    }
+
+    function getAnswer(questions) {
+
+      var selected;
+      if (questions[0].checked) {
+        selected = 1;
+      }
+      if (questions[1].checked) {
+        selected = 2;
+      }
+      if (questions[2].checked) {
+        selected = 3;
+      }
+      if (questions[3].checked) {
+        selected = 4;
+      }
+      return selected;
+    }
+
+    function isCorrect(userAnswer, actualAnswer) {
+      return userAnswer == actualAnswer;
+    }
+
+    function changeQuiz(newQuiz) {
+
+      if (newQuiz <= noQuizzes["noQuiz"] && newQuiz > 0) {
+        currentQuiz = newQuiz;
+        el = document.getElementById("questionsId");
+        el.parentNode.removeChild(el);
+        el2 = document.getElementById("scores");
+        el2.parentNode.removeChild(el2);
+        var quizJson = fetch('/quiz/'+newQuiz).then(parseJson).then(renderFromJson).catch(logErrors);
+        var scoresJson = fetch('/scores/'+newQuiz).then(parseJson).then(renderFromJsonScores).catch(logErrors);
+
+    }
+  }
+
+  </script>
+
+  <h1 id = "quizTitle">Quiz</h1>
+
+  <p> Select a quiz</p>
+  <input id="quizInput" type = "text" value ="1">
+  <button type = "submit" onclick=changeQuiz(document.getElementById("quizInput").value)>Change</button>
+
+</body>
+</html>
