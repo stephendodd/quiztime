@@ -37,9 +37,6 @@ end
 get '/alias/:alias/:currentquiz/:score' do
   puts params[:alias]
   db = SQLite3::Database.open "quizzes.sqlite"
-
-  #puts db.execute( "SELECT 1 FROM users WHERE alias = #{params[:alias]}")
-
   db.execute( "INSERT INTO users ( quiz, alias, score ) VALUES ( ?, ?, ? )", [params[:currentquiz], params[:alias], params[:score]])
 
 end
@@ -90,43 +87,33 @@ get '/quiz/:quizNo' do
   begin
 
     quizDB = SQLite3::Database.open "quizzes.sqlite"
-    questionsQuery = quizDB.prepare "SELECT questions.text, answers.text, questions.answer_id FROM questions, answers where answers.question_id = questions.id AND questions.quiz_id =#{params[:quizNo]}"
+    quizDB.results_as_hash = true
+    questionsQuery = quizDB.prepare "SELECT questions.text, answers.answer, questions.answer_id FROM questions, answers where answers.question_id = questions.id AND questions.quiz_id =#{params[:quizNo]}"
     questionsQueryResult = questionsQuery.execute
-    p questionsQueryResult
     questionsQueryResult.each_with_index do |question, index|
 
       if index%4 == 0 && index != 0
-        p "it happened"
         newQuestionArray.push(questionJson)
         questionJson = {}
       end
 
-      if questionJson[:question] != question[0]
+      if questionJson[:question] != question["text"]
         questionJson = {}
-        questionJson[:question] = question[0]
-        questionJson[:answer] = question[2]
+        questionJson[:question] = question["text"]
+        questionJson[:answer] = question["answer_id"]
       end
-      questionJson["option#{index%4+1}"] = question[1]
+      questionJson["option#{index%4+1}"] = question["answer"]
 
     end
     newQuestionArray.push(questionJson)
-    p "newQuestionArray#{newQuestionArray}"
-      #stm = quizDB.prepare "SELECT * FROM #{quizString}"
-
-      #rs = stm.execute
-      #rs.each do |question|
-      #  questionArray.push(question)
-      #end
 
   rescue SQLite3::Exception => e
     puts "Error occured"
     puts e
 
   ensure
-  #  stm.close if stm
     questionsQuery.close if questionsQuery
     quizDB.close if quizDB
-
 
   end
 
