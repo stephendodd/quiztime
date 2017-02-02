@@ -32,7 +32,7 @@
         questionElm.name = "questionForm";
 
         var questionString = document.createElement("p");
-        questionString.innerText = question[0];
+        questionString.innerText = question["question"];
         questionElm.appendChild(questionString);
 
         for (i=0; i< noOfAnswers; i++) {
@@ -41,7 +41,7 @@
           optioninput.name = "option";
           optioninput.type ="radio";
           var optionlabel = document.createElement("label");
-          optionlabel.innerText = question[i+1];
+          optionlabel.innerText = question["option"+(i+1)];
           option.appendChild(optioninput);
           option.appendChild(optionlabel);
           questionElm.appendChild(option);
@@ -96,7 +96,7 @@
       var totalQuestions = document.getElementById("questionsId").getElementsByTagName("form").length;
       for (i=0; i<totalQuestions; i++) {
         var userAnswerNew = getAnswer(document.getElementById("questionsId").getElementsByTagName("form")[i].elements);
-        var actualAnswer = quizJson.quiz[i][5];
+        var actualAnswer = quizJson.quiz[i]["answer"];
         var correct = isCorrect(userAnswerNew, actualAnswer);
         if (correct) {
           totalCorrect += 1;

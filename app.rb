@@ -82,30 +82,57 @@ end
 
 get '/quiz/:quizNo' do
   questionArray = []
+  newQuestionArray = []
+  optionArray = []
+  questionJson = {}
   quizString = "quiz#{params[:quizNo]}"
 
   begin
 
-    db2 = SQLite3::Database.open "quizzes.sqlite"
+    quizDB = SQLite3::Database.open "quizzes.sqlite"
+    questionsQuery = quizDB.prepare "SELECT questions.text, answers.text, questions.answer_id FROM questions, answers where answers.question_id = questions.id AND questions.quiz_id =#{params[:quizNo]}"
+    questionsQueryResult = questionsQuery.execute
+    p questionsQueryResult
+    questionsQueryResult.each_with_index do |question, index|
 
-      stm = db2.prepare "SELECT * FROM #{quizString}"
-
-      rs = stm.execute
-      rs.each do |question|
-        questionArray.push(question)
+      if index%4 == 0 && index != 0
+        p "it happened"
+        newQuestionArray.push(questionJson)
+        questionJson = {}
       end
+
+      if questionJson[:question] != question[0]
+        questionJson = {}
+        questionJson[:question] = question[0]
+        questionJson[:answer] = question[2]
+      end
+      questionJson["option#{index%4+1}"] = question[1]
+
+    end
+    newQuestionArray.push(questionJson)
+    p "newQuestionArray#{newQuestionArray}"
+      #stm = quizDB.prepare "SELECT * FROM #{quizString}"
+
+      #rs = stm.execute
+      #rs.each do |question|
+      #  questionArray.push(question)
+      #end
 
   rescue SQLite3::Exception => e
     puts "Error occured"
     puts e
 
   ensure
-    stm.close if stm
-    db2.close if db2
+  #  stm.close if stm
+    questionsQuery.close if questionsQuery
+    quizDB.close if quizDB
+
+
   end
 
   content_type :json
-  {quiz: questionArray}.to_json
+  p "questionArray#{questionArray}"
+  {quiz: newQuestionArray}.to_json
 
 end
 
