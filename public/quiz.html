@@ -133,29 +133,10 @@
       return userAnswer == actualAnswer;
     }
 
-    /*function changeQuiz(newQuiz) {
-
-      if (newQuiz <= noQuizzes["noQuiz"] && newQuiz > 0) {
-        currentQuiz = newQuiz;
-        el = document.getElementById("questionsId");
-        el.parentNode.removeChild(el);
-        el2 = document.getElementById("scores");
-        el2.parentNode.removeChild(el2);
-        var quizJson = fetch('/quizjson/'+newQuiz).then(parseJson).then(renderFromJson).catch(logErrors);
-        var scoresJson = fetch('/scores/'+newQuiz).then(parseJson).then(renderFromJsonScores).catch(logErrors);
-
-    }
-  }*/
-
   </script>
 
   <a href="/index.html">Home</a>
-
   <h1 id = "quizTitle">Quiz</h1>
 
-  <!--<p> Select a quiz</p>
-  <input id="quizInput" type = "text" value ="1">
-  <button type = "submit" onclick=changeQuiz(document.getElementById("quizInput").value)>Change</button>
--->
 </body>
 </html>
