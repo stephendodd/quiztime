@@ -124,10 +124,10 @@ end
     noQuizzes = 0
     begin
       quizDB = SQLite3::Database.open "quizzes.sqlite"
-      noQuizQuery = quizDB.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
+      noQuizQuery = quizDB.prepare "SELECT COUNT(*) FROM quizzes"
       noQuizQueryResult = noQuizQuery.execute
       noQuizQueryResult.each do |res|
-        noQuizzes = res[0]-1
+        noQuizzes = res[0]
       end
 
   rescue SQLite3::Exception => e

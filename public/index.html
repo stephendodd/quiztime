@@ -7,7 +7,6 @@
 <body>
 
   <h1>Select a quiz</h1>
-
   <div id="quizChoices">
     <h2>Available Quizzes</h2>
   </div>
@@ -21,10 +20,8 @@
 
    var quizzesBlock = document.getElementById("quizChoices");
    json.quizzes.forEach(function(quiz) {
-     console.log(quiz);
 
      var quizP = document.createElement("p");
-
      var quizName = document.createElement("a");
      quizName.title = "quizName";
      quizName.href = "quiz/"+quiz.id;
