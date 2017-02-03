@@ -11,13 +11,13 @@ get '/quizzes' do
   quizzes = []
 
   begin
-    db3 = SQLite3::Database.open "quizzes.sqlite"
-    stm3 = db3.prepare "SELECT * FROM quizzes"
-    rs3 = stm3.execute
-    rs3.each_hash do |res|
+    quizDB = SQLite3::Database.open "quizzes.sqlite"
+    quizzesQuery = quizDB.prepare "SELECT * FROM quizzes"
+    quizzesQueryResult = quizzesQuery.execute
+    quizzesQueryResult.each_hash do |quiz|
       quizzes.push(
-        name: res["name"],
-        id: "#{res['id']}"
+        name: quiz["name"],
+        id: "#{quiz['id']}"
       )
     end
 
@@ -26,8 +26,8 @@ get '/quizzes' do
     puts e
 
   ensure
-    stm3.close if stm3
-    db3.close if db3
+    quizzesQuery.close if quizzesQuery
+    quizDB.close if quizDB
   end
   content_type :json
   {quizzes: quizzes}.to_json
@@ -35,10 +35,8 @@ get '/quizzes' do
 end
 
 get '/alias/:alias/:currentquiz/:score' do
-  puts params[:alias]
-  db = SQLite3::Database.open "quizzes.sqlite"
-  db.execute( "INSERT INTO users ( quiz, alias, score ) VALUES ( ?, ?, ? )", [params[:currentquiz], params[:alias], params[:score]])
-
+  quizDB = SQLite3::Database.open "quizzes.sqlite"
+  quizDB.execute( "INSERT INTO users ( quiz, alias, score ) VALUES ( ?, ?, ? )", [params[:currentquiz], params[:alias], params[:score]])
 end
 
 get '/scores/:quizNo' do
@@ -47,12 +45,12 @@ get '/scores/:quizNo' do
 
   begin
 
-    db = SQLite3::Database.open "quizzes.sqlite"
+    quizDB = SQLite3::Database.open "quizzes.sqlite"
 
-    users = db.prepare "SELECT * FROM users WHERE quiz == #{params[:quizNo]}"
+    users = quizDB.prepare "SELECT * FROM users WHERE quiz == #{params[:quizNo]}"
     usersResult = users.execute
-    usersResult.each do |user|
-      jsonUser = {"alias": user[1], "score": user[2]}
+    usersResult.each_hash do |user|
+      jsonUser = {"alias": user["alias"], "score": user["score"]}
       userArray.push(jsonUser);
     end
 
@@ -62,7 +60,7 @@ get '/scores/:quizNo' do
 
   ensure
     users.close if users
-    db.close if db
+    quizDB.close if quizDB
   end
 
   userArray.sort_by! do |e|
@@ -73,11 +71,11 @@ get '/scores/:quizNo' do
 
 end
 
-get '/quiznew/:quizNo' do
+get '/quiz/:quizNo' do
     File.new('public/quiz.html').read
 end
 
-get '/quiz/:quizNo' do
+get '/quizjson/:quizNo' do
   questionArray = []
   newQuestionArray = []
   optionArray = []
@@ -118,7 +116,6 @@ get '/quiz/:quizNo' do
   end
 
   content_type :json
-  p "questionArray#{questionArray}"
   {quiz: newQuestionArray}.to_json
 
 end
@@ -126,10 +123,10 @@ end
   get '/noquiz' do
     noQuizzes = 0
     begin
-      db3 = SQLite3::Database.open "quizzes.sqlite"
-      stm3 = db3.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
-      rs3 = stm3.execute
-      rs3.each do |res|
+      quizDB = SQLite3::Database.open "quizzes.sqlite"
+      noQuizQuery = quizDB.prepare "SELECT count(*) FROM sqlite_master WHERE type = 'table'"
+      noQuizQueryResult = noQuizQuery.execute
+      noQuizQueryResult.each do |res|
         noQuizzes = res[0]-1
       end
 
@@ -138,8 +135,8 @@ end
     puts e
 
   ensure
-    stm3.close if stm3
-    db3.close if db3
+    noQuizQuery.close if noQuizQuery
+    quizDB.close if quizDB
   end
   content_type :json
   {noQuiz: noQuizzes}.to_json
