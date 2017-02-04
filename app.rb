@@ -86,21 +86,29 @@ get '/quizjson/:quizNo' do
 
     quizDB = SQLite3::Database.open "quizzes.sqlite"
     quizDB.results_as_hash = true
-    questionsQuery = quizDB.prepare "SELECT questions.text, answers.answer, questions.answer_id FROM questions, answers where answers.question_id = questions.id AND questions.quiz_id =#{params[:quizNo]}"
+    questionsQuery = quizDB.prepare "SELECT questions.text, answers.answer, questions.answer_id, answers.question_id FROM questions, answers where answers.question_id = questions.id AND questions.quiz_id =#{params[:quizNo]}"
     questionsQueryResult = questionsQuery.execute
+    previousQuestionID = 1
+    questionIndex = 0
     questionsQueryResult.each_with_index do |question, index|
+    #questionIndex = questionIndex || 0
 
-      if index%4 == 0 && index != 0
+      #Check if question has changed
+      if (question["question_id"] != previousQuestionID && index!=0)
+
         newQuestionArray.push(questionJson)
+        questionIndex = 0
         questionJson = {}
+
       end
 
-      if questionJson[:question] != question["text"]
-        questionJson = {}
-        questionJson[:question] = question["text"]
-        questionJson[:answer] = question["answer_id"]
-      end
-      questionJson["option#{index%4+1}"] = question["answer"]
+      questionJson[:question] = questionJson[:question] || question["text"]
+      questionJson[:answer] = questionJson[:answer] || question["answer_id"]
+
+      questionJson["option#{questionIndex+1}"] = question["answer"]
+
+      previousQuestionID = question["question_id"]
+      questionIndex+=1
 
     end
     newQuestionArray.push(questionJson)

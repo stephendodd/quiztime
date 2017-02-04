@@ -9,25 +9,25 @@
 
     var quizJson = {};
     var noQuizzes = {};
-    console.log(window.location.href)
     var currentUrl = window.location.href;
+    var numberOfQuizzes = 3;
 
     var currentQuiz = currentUrl.substr(currentUrl.length - 1);
-    if (currentQuiz > 2 || currentQuiz <= 0) {
+    if (currentQuiz > numberOfQuizzes || currentQuiz <= 0) {
       currentQuiz = 1;
     }
 
     var parseJson = function(response) { return response.json() };
     var renderFromJson = function(json) {
 
-      var noOfAnswers = 4;
-
+      var noOfAnswers;
       var questions = document.createElement("div");
       questions.id = "questionsId";
 
       document.body.appendChild(questions);
 
       json.quiz.forEach(function(question) {
+        noOfAnswers = Object.keys(question).length -2;
         var questionElm = document.createElement("form");
         questionElm.name = "questionForm";
 
@@ -112,21 +112,14 @@
     }
 
     function getAnswer(questions) {
-
       var selected;
-      if (questions[0].checked) {
-        selected = 1;
-      }
-      if (questions[1].checked) {
-        selected = 2;
-      }
-      if (questions[2].checked) {
-        selected = 3;
-      }
-      if (questions[3].checked) {
-        selected = 4;
+      for(var i = 0; i< questions.length; i++){
+        if (questions[i].checked) {
+          selected = i+1
+        }
       }
       return selected;
+
     }
 
     function isCorrect(userAnswer, actualAnswer) {
