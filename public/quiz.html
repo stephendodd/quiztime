@@ -1,3 +1,5 @@
+<!--Displays the selected quizzes' questions and score -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,124 +9,121 @@
 <body>
   <script>
 
-    var quizJson = {};
-    var noQuizzes = {};
-    var currentUrl = window.location.href;
-    var numberOfQuizzes = 3;
+  var quizJson = {};
+  var noQuizzes = {};
+  var currentUrl = window.location.href;
+  var numberOfQuizzes = 3;
+  var currentQuiz = currentUrl.substr(currentUrl.length - 1);
 
-    var currentQuiz = currentUrl.substr(currentUrl.length - 1);
-    if (currentQuiz > numberOfQuizzes || currentQuiz <= 0) {
-      currentQuiz = 1;
-    }
+  //Generic Json parse function
+  var parseJson = function(response) { return response.json() };
 
-    var parseJson = function(response) { return response.json() };
-    var renderFromJson = function(json) {
+  //Takes parsed quiz json and renders it into html
+  var renderQuizFromJson = function(json) {
+    var noOfAnswers;
+    var questions = document.createElement("div");
+    questions.id = "questionsId";
+    document.body.appendChild(questions);
 
-      var noOfAnswers;
-      var questions = document.createElement("div");
-      questions.id = "questionsId";
+    json.quiz.forEach(function(question) {
+      noOfAnswers = Object.keys(question).length -2;
+      var questionElm = document.createElement("form");
+      questionElm.name = "questionForm";
+      var questionString = document.createElement("p");
+      questionString.innerText = question["question"];
+      questionElm.appendChild(questionString);
 
-      document.body.appendChild(questions);
-
-      json.quiz.forEach(function(question) {
-        noOfAnswers = Object.keys(question).length -2;
-        var questionElm = document.createElement("form");
-        questionElm.name = "questionForm";
-
-        var questionString = document.createElement("p");
-        questionString.innerText = question["question"];
-        questionElm.appendChild(questionString);
-
-        for (i=0; i< noOfAnswers; i++) {
-          var option = document.createElement("div");
-          var optioninput = document.createElement("input");
-          optioninput.name = "option";
-          optioninput.type ="radio";
-          var optionlabel = document.createElement("label");
-          optionlabel.innerText = question["option"+(i+1)];
-          option.appendChild(optioninput);
-          option.appendChild(optionlabel);
-          questionElm.appendChild(option);
-        }
-
-        questions.appendChild(questionElm);
-      });
-      var inputAlias = document.createElement("input");
-      inputAlias.type = "text";
-      inputAlias.id = "inputAlias";
-      questions.appendChild(inputAlias);
-
-      var inputButton = document.createElement("input");
-      inputButton.type = "button";
-      inputButton.onclick = submitAnswer;
-      inputButton.value = "submit answer";
-      questions.appendChild(inputButton);
-
-      quizJson = json;
-      return json;
-    };
-    var logErrors = function(ex) { console.log('parsing failed', ex) };
-
-    var renderFromJsonScores = function(json) {
-      var scores = document.createElement("div");
-      scores.id = "scores";
-      var scoreTitle = document.createElement("p");
-      scoreTitle.innerText = "Scores";
-      scores.appendChild(scoreTitle);
-
-      json.scores.forEach(function(score) {
-        var scoreElm = document.createElement("p");
-        scoreElm.innerText = score["alias"] + ": " + score["score"];
-        scores.appendChild(scoreElm);
-      })
-
-      document.body.appendChild(scores);
-    }
-
-    var renderFromJsonNoQuiz = function(json) {
-      noQuizzes = json;
-      json;
-    };
-
-    var quizJson = fetch('/quizjson/'+currentQuiz).then(parseJson).then(renderFromJson).catch(logErrors);
-    var scoresJson = fetch('/scores/'+currentQuiz).then(parseJson).then(renderFromJsonScores).catch(logErrors);
-    var noQuizzes2 = fetch('/noquiz').then(parseJson).then(renderFromJsonNoQuiz).catch(logErrors);
-
-    function submitAnswer() {
-      var totalCorrect = 0;
-      var totalQuestions = document.getElementById("questionsId").getElementsByTagName("form").length;
-      for (i=0; i<totalQuestions; i++) {
-        var userAnswerNew = getAnswer(document.getElementById("questionsId").getElementsByTagName("form")[i].elements);
-        var actualAnswer = quizJson.quiz[i]["answer"];
-        var correct = isCorrect(userAnswerNew, actualAnswer);
-        if (correct) {
-          totalCorrect += 1;
-        }
+      for (i=0; i< noOfAnswers; i++) {
+        var option = document.createElement("div");
+        var optioninput = document.createElement("input");
+        optioninput.name = "option";
+        optioninput.type ="radio";
+        var optionlabel = document.createElement("label");
+        optionlabel.innerText = question["option"+(i+1)];
+        option.appendChild(optioninput);
+        option.appendChild(optionlabel);
+        questionElm.appendChild(option);
       }
+      questions.appendChild(questionElm);
+    });
+    var inputAlias = document.createElement("input");
+    inputAlias.type = "text";
+    inputAlias.id = "inputAlias";
+    questions.appendChild(inputAlias);
+    var inputButton = document.createElement("input");
+    inputButton.type = "button";
+    inputButton.onclick = submitAnswer;
+    inputButton.value = "submit answer";
+    questions.appendChild(inputButton);
 
-      console.log("Answers correct: " + totalCorrect);
+    quizJson = json;
+    return json;
+  };
 
-      var name = document.getElementById("inputAlias").value;
-      if (name != "") {
-        var nameJson = fetch('/alias/'+name+'/'+currentQuiz+'/'+totalCorrect);
+  //Takes parsed score json and renders it into html
+  var renderScoresFromJson = function(json) {
+    var scores = document.createElement("div");
+    scores.id = "scores";
+    var scoreTitle = document.createElement("p");
+    scoreTitle.innerText = "Scores";
+    scores.appendChild(scoreTitle);
+
+    json.scores.forEach(function(score) {
+      var scoreElm = document.createElement("p");
+      scoreElm.innerText = score["alias"] + ": " + score["score"];
+      scores.appendChild(scoreElm);
+    })
+    document.body.appendChild(scores);
+  }
+
+  //Logs any errors due to parsing or rendering json
+  var logErrors = function(ex) { console.log('parsing failed', ex) };
+
+  //Loads quiz 1 if quiz number specified in url doesn't exist
+  if (currentQuiz > numberOfQuizzes || currentQuiz <= 0) {
+    currentQuiz = 1;
+  }
+
+  //Performs an api fetch on the number of quizzes, quiz and scores json
+  var noQuizzes = fetch('/noquiz').then(parseJson).catch(logErrors);
+  var quizJson = fetch('/quizjson/'+currentQuiz).then(parseJson).then(renderQuizFromJson).catch(logErrors);
+  var scoresJson = fetch('/scores/'+currentQuiz).then(parseJson).then(renderScoresFromJson).catch(logErrors);
+
+  //Tallies the number of questions that have correct answers selected
+  function submitAnswer() {
+    var totalCorrect = 0;
+    var totalQuestions = document.getElementById("questionsId").getElementsByTagName("form").length;
+    for (i=0; i<totalQuestions; i++) {
+      var userAnswerNew = getAnswer(document.getElementById("questionsId").getElementsByTagName("form")[i].elements);
+      var actualAnswer = quizJson.quiz[i]["answer"];
+      if (isCorrect(userAnswerNew, actualAnswer)) {
+        totalCorrect += 1;
       }
-
     }
 
-    function getAnswer(questions) {
-      var selected;
-      for(var i = 0; i< questions.length; i++){
-        if (questions[i].checked) {
-          selected = i+1
-        }
+    //Notifies how many answers were correct in the console, will add this to html div soon
+    console.log("Answers correct: " + totalCorrect);
+
+    //Submits score if name box is filled in
+    var name = document.getElementById("inputAlias").value;
+    if (name != "") {
+      var nameJson = fetch('/alias/'+name+'/'+currentQuiz+'/'+totalCorrect);
+    }
+  }
+
+  //Retrieves the answer radio button index for a question
+  function getAnswer(questions) {
+    for(var i = 0; i< questions.length; i++){
+      if (questions[i].checked) {
+        return i+1;
       }
-      return selected;
-
     }
+    return;
+  }
 
-    function isCorrect(userAnswer, actualAnswer) {
-      return userAnswer == actualAnswer;
-    }
+  function isCorrect(userAnswer, actualAnswer) {
+    return userAnswer == actualAnswer;
+  }
 
   </script>
 

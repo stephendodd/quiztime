@@ -40,13 +40,10 @@ get '/alias/:alias/:currentquiz/:score' do
 end
 
 get '/scores/:quizNo' do
-
   userArray = []
 
   begin
-
     quizDB = SQLite3::Database.open "quizzes.sqlite"
-
     users = quizDB.prepare "SELECT * FROM users WHERE quiz == #{params[:quizNo]}"
     usersResult = users.execute
     usersResult.each_hash do |user|
@@ -68,7 +65,6 @@ get '/scores/:quizNo' do
   end
   content_type :json
   {scores: userArray}.to_json
-
 end
 
 get '/quiz/:quizNo' do
@@ -83,7 +79,6 @@ get '/quizjson/:quizNo' do
   quizString = "quiz#{params[:quizNo]}"
 
   begin
-
     quizDB = SQLite3::Database.open "quizzes.sqlite"
     quizDB.results_as_hash = true
     questionsQuery = quizDB.prepare "SELECT questions.text, answers.answer, questions.answer_id, answers.question_id FROM questions, answers where answers.question_id = questions.id AND questions.quiz_id =#{params[:quizNo]}"
@@ -91,7 +86,6 @@ get '/quizjson/:quizNo' do
     previousQuestionID = 1
     questionIndex = 0
     questionsQueryResult.each_with_index do |question, index|
-    #questionIndex = questionIndex || 0
 
       #Check if question has changed
       if (question["question_id"] != previousQuestionID && index!=0)
@@ -99,17 +93,12 @@ get '/quizjson/:quizNo' do
         newQuestionArray.push(questionJson)
         questionIndex = 0
         questionJson = {}
-
       end
-
       questionJson[:question] = questionJson[:question] || question["text"]
       questionJson[:answer] = questionJson[:answer] || question["answer_id"]
-
       questionJson["option#{questionIndex+1}"] = question["answer"]
-
       previousQuestionID = question["question_id"]
       questionIndex+=1
-
     end
     newQuestionArray.push(questionJson)
 
@@ -120,12 +109,10 @@ get '/quizjson/:quizNo' do
   ensure
     questionsQuery.close if questionsQuery
     quizDB.close if quizDB
-
   end
 
   content_type :json
   {quiz: newQuestionArray}.to_json
-
 end
 
   get '/noquiz' do
